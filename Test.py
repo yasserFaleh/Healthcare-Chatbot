@@ -114,31 +114,38 @@ def print_disease(node):
     disease = le.inverse_transform(val[0])
     return disease
 
-def recurse(node, depth,input,feature_names,tree):
+def recurse(node, depth,Input,feature_names,tree):
     tree_ = tree.tree_
     feature_name = [feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!" for i in tree_.feature]
     if tree_.feature[node] != _tree.TREE_UNDEFINED:
         name = feature_name[node]
         threshold = tree_.threshold[node]
-        if name == input:
+        if name == Input:
             val = 1
         else:
             val = 0
         if  val <= threshold:
-            recurse(tree_.children_left[node], depth + 1,input,feature_names,tree)
+            recurse(tree_.children_left[node], depth + 1,Input,feature_names,tree)
         else:
             symptoms_present.append(name)
-            recurse(tree_.children_right[node], depth + 1,input,feature_names,tree)
+            recurse(tree_.children_right[node], depth + 1,Input,feature_names,tree)
     else:
         present_disease = print_disease(tree_.value[node])
         red_cols = reduced_data.columns
         symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
         print("Are you experiencing any ")
         symptoms_exp=[]
+        inp = ""
         for syms in list(symptoms_given):
             print(syms,"? : ",end='')
-            #   if yes the append !!
-            symptoms_exp.append(syms)
+            while True:
+                inp = input("")
+                if (inp == "yes" or inp == "no"):
+                    break
+                else:
+                    print("provide proper answers i.e. (yes/no) : ", end="")
+            if (inp == "yes"):
+                symptoms_exp.append(syms)
 
         second_prediction=sec_predict(symptoms_exp)
         if(present_disease[0]==second_prediction[0]):
@@ -149,6 +156,8 @@ def recurse(node, depth,input,feature_names,tree):
 
 def tree_to_code(tree, feature_names):
     diseases=[]
+    predected_diseases = []
+
     chk_dis = ",".join(feature_names).split(",")
 
 
@@ -197,6 +206,8 @@ def tree_to_code(tree, feature_names):
 
     for item in diseases:
         recurse(0, 1,item,feature_names,tree)
+
+    predected_diseases=sorted(set(predected_diseases))
 
     for item in predected_diseases :
         print("You may have ",item)
