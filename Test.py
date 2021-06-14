@@ -156,7 +156,7 @@ def recurse(node, depth,Input,feature_names,tree):
 
 def tree_to_code(tree, feature_names):
     diseases=[]
-    predected_diseases = []
+    global predected_diseases
 
     chk_dis = ",".join(feature_names).split(",")
 
@@ -207,17 +207,28 @@ def tree_to_code(tree, feature_names):
     for item in diseases:
         recurse(0, 1,item,feature_names,tree)
 
+    print(predected_diseases)
     predected_diseases=sorted(set(predected_diseases))
+    print(predected_diseases)
 
     for item in predected_diseases :
         print("You may have ",item)
         print(description_list[item])
         precution_list.append(precautionDictionary[item])
 
+    precutions=[]
+
     print("Take following measures : ")
     for j in precution_list:
-        print(j)
+        for i in j:
+            precutions.append(i)
 
+    precutions=sorted(set(precutions))
+
+    for precution in precutions:
+        print("-",precution)
+
+    print("Diseases : ")
     for d in diseases:
         print(d)
 
