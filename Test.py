@@ -53,7 +53,7 @@ symptoms_dict = {}
 
 predected_diseases = []
 symptoms_present = []
-diseases = []
+diseases = {}
 precution_list = []
 
 
@@ -148,20 +148,35 @@ def recurse(node, depth,input,feature_names,tree):
             predected_diseases.append(second_prediction[0])
 
 def tree_to_code(tree, feature_names):
-    conf_inp=1
+    diseases=[]
     chk_dis = ",".join(feature_names).split(",")
-    while conf_inp >0:
-        print("Enter the symptom you are experiencing  \n\t\t\t\t\t\t",end="->")
-        disease_input = input("")
-        tokens = nltk.word_tokenize(disease_input)
-        tokens = [lemmatizer.lemmatize(word) for word in tokens]
-        for w in tokens :
-            print(w)
-            conf, cnf_dis = check_pattern(chk_dis, w)  # conf,cnf_dis=check_pattern(chk_dis,disease_input)
-            if conf==1:
-                for num, it in enumerate(cnf_dis):
-                    print(num, ")", it)
 
+
+    print("Enter the symptom you are experiencing  \n\t\t\t\t\t\t", end="->")
+    disease_input = input("")
+    tokens = nltk.word_tokenize(disease_input)
+    tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    tokens = sorted(set(tokens))
+    for w in tokens:
+        print(w)
+        conf, cnf_dis = check_pattern(chk_dis, w)  # conf,cnf_dis=check_pattern(chk_dis,disease_input)
+        if conf == 1:
+            for num, it in enumerate(cnf_dis):
+                print(num, ")", it)
+
+    try:
+        confInp = int(input(""))
+    except:
+        pass
+
+    if confInp != -1:
+        disease_input = cnf_dis[confInp]
+        diseases.append(disease_input)
+    print(diseases)
+
+    conf_inp = 1
+
+    while conf_inp >0:
         conf,cnf_dis=check_pattern(chk_dis,"") # conf,cnf_dis=check_pattern(chk_dis,disease_input)
         print("searches related to input: ")
         for num, it in enumerate(cnf_dis):
@@ -178,6 +193,8 @@ def tree_to_code(tree, feature_names):
             disease_input = cnf_dis[conf_inp]
             diseases.append(disease_input)
 
+    diseases=sorted(set(diseases))
+
     for item in diseases:
         recurse(0, 1,item,feature_names,tree)
 
@@ -189,6 +206,9 @@ def tree_to_code(tree, feature_names):
     print("Take following measures : ")
     for j in precution_list:
         print(j)
+
+    for d in diseases:
+        print(d)
 
 
 init()
