@@ -133,7 +133,6 @@ def recurse(node, depth,Input,feature_names,tree):
         present_disease = print_disease(tree_.value[node])
         red_cols = reduced_data.columns
         symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
-        print("Are you experiencing any ")
         symptoms_exp=[]
         inp = ""
         for syms in list(symptoms_given):
@@ -166,44 +165,17 @@ def tree_to_code(tree, feature_names):
     tokens = nltk.word_tokenize(disease_input)
     tokens = [lemmatizer.lemmatize(word) for word in tokens]
     tokens = sorted(set(tokens))
+    tokens = [w for w in tokens if len(w) > 3]
     for w in tokens:
         print(w)
         conf, cnf_dis = check_pattern(chk_dis, w)  # conf,cnf_dis=check_pattern(chk_dis,disease_input)
         if conf == 1:
             for num, it in enumerate(cnf_dis):
-                print(num, ")", it)
-
-    try:
-        confInp = int(input(""))
-    except:
-        pass
-
-    if confInp != -1:
-        disease_input = cnf_dis[confInp]
-        diseases.append(disease_input)
-    print(diseases)
-
-    conf_inp = 1
-
-    while conf_inp >0:
-        conf,cnf_dis=check_pattern(chk_dis,"") # conf,cnf_dis=check_pattern(chk_dis,disease_input)
-        print("searches related to input: ")
-        for num, it in enumerate(cnf_dis):
-            print(num, ")", it)
-        if num != 0:
-            print(f"Select the one you meant (0 - {num}):  ", end="")
-            try:
-                conf_inp = int(input(""))
-            except:
-                pass
-        else:
-            conf_inp = 0
-        if conf_inp != -1 :
-            disease_input = cnf_dis[conf_inp]
-            diseases.append(disease_input)
+                diseases.append(it)
 
     diseases=sorted(set(diseases))
 
+    print("Are you experiencing any ")
     for item in diseases:
         recurse(0, 1,item,feature_names,tree)
 
@@ -211,8 +183,8 @@ def tree_to_code(tree, feature_names):
     predected_diseases=sorted(set(predected_diseases))
     print(predected_diseases)
 
+    print("You may have ", item)
     for item in predected_diseases :
-        print("You may have ",item)
         print(description_list[item])
         precution_list.append(precautionDictionary[item])
 
@@ -236,8 +208,3 @@ def tree_to_code(tree, feature_names):
 init()
 tree_to_code(clf,cols)
 
-
-#print(severityDictionary)
-#print(description_list)
-#print(precautionDictionary)
-#print(symptoms_dict)
