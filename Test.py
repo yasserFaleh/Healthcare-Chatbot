@@ -57,6 +57,7 @@ symptoms_present = []
 diseases = {}
 precution_list = []
 
+rejected={"pain"}
 
 def init():
     #Read from excell files
@@ -170,7 +171,7 @@ def tree_to_code(tree, feature_names):
     print("Enter the symptom you are experiencing  \n\t\t\t\t\t\t", end="->")
     disease_input = input("")
     tokens = nltk.word_tokenize(disease_input)
-    tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
     tokens = sorted(set(tokens))
     tokens = [w for w in tokens if len(w) > 3]
     for w in tokens:
