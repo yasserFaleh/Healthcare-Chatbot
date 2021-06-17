@@ -48,6 +48,7 @@ features = cols
 severityDictionary=dict()
 description_list = dict()
 precautionDictionary=dict()
+symptoms=dict()
 
 symptoms_dict = {}
 
@@ -136,17 +137,23 @@ def recurse(node, depth,Input,feature_names,tree):
         symptoms_exp=[]
         inp = ""
         for syms in list(symptoms_given):
-            print(syms,"? : ",end='')
-            while True:
-                inp = input("")
-                if (inp == "yes" or inp == "no"):
-                    break
-                else:
-                    print("provide proper answers i.e. (yes/no) : ", end="")
-            if (inp == "yes"):
-                symptoms_exp.append(syms)
+            if syms in symptoms.keys() :
+                print("Hello",syms,symptoms[syms])
+                if (symptoms[syms] == "yes"):
+                    symptoms_exp.append(syms)
+            else:
+                print(syms,"? : ",end='')
+                while True:
+                    inp = input("")
+                    if (inp == "yes" or inp == "no"):
+                        symptoms[syms]=inp
+                        break
+                    else:
+                        print("provide proper answers i.e. (yes/no) : ", end="")
+                if (inp == "yes"):
+                    symptoms_exp.append(syms)
 
-        second_prediction=sec_predict(symptoms_exp)
+            second_prediction=sec_predict(symptoms_exp)
         if(present_disease[0]==second_prediction[0]):
             predected_diseases.append(present_disease[0])
         else:
@@ -208,3 +215,4 @@ def tree_to_code(tree, feature_names):
 init()
 tree_to_code(clf,cols)
 
+print(symptoms)
