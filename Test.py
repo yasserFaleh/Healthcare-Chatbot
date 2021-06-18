@@ -60,12 +60,35 @@ rejected={"pain"}
 greeting_inputs = ("hey","Hi","Hey","How are you","Is anyone there?","Hello","Good day","Hello","How are you","good morning","Is anyone there?", "good evening", "morning", "evening", "hi", "whatsup")
 greeting_responses = ["hey","Hey :-)", "hey hows you?", "hello, how you doing", "hello", "Welcome","Hello, thanks for visiting","Hi there, what can I do for you?","Hi there, how can I help?"]
 
+goodbye_inputs=( "Bye", "See you later", "Goodbye" )
+goodbye_responses = ["See you later, thanks for visiting","Have a nice day","Bye! Come back again soon." ]
+
+thanks_inputs =("Thanks", "thanks","Thank","thank","Thank you", "That's helpful", "Thank's a lot!")
+thanks_responses =["Happy to help!", "Any time!", "My pleasure" ]
+
+
 def generate_greeting_response(greeting):
     for token in greeting.split():
         if token.lower() in greeting_inputs:
             return True,random.choice(greeting_responses)
         else:
             return False,"0"
+
+def generate_goodbye_response(goodbye):
+    for token in goodbye.split():
+        if token.lower() in goodbye_inputs:
+            return True,random.choice(goodbye_responses)
+        else:
+            return False,"0"
+
+def generate_thanks_response(thanks):
+    for token in thanks.split():
+        if token.lower() in thanks_inputs:
+            return True,random.choice(thanks_responses)
+        else:
+            return False,"0"
+
+
 
 def init():
     #Read from excell files
@@ -225,3 +248,16 @@ def tree_to_code(tree, feature_names):
 
 init()
 tree_to_code(clf,cols)
+
+inputs = input("")
+tokens = nltk.word_tokenize(inputs)
+tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
+for token in tokens:
+    isGoodByed,goodbye_response = generate_goodbye_response(token)
+    isThanksed,thanks_response = generate_thanks_response(token)
+    if (isGoodByed):
+        print(goodbye_response)
+    if (isThanksed):
+        print(thanks_response)
+
+
