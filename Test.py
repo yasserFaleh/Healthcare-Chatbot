@@ -8,6 +8,8 @@ import csv
 import re
 import nltk
 from nltk.stem import WordNetLemmatizer
+import random
+
 
 lemmatizer = WordNetLemmatizer()
 training = pd.read_csv('Training.csv')
@@ -34,11 +36,7 @@ testy    = le.transform(testy)
 
 clf1  = DecisionTreeClassifier()
 clf = clf1.fit(x_train,y_train)
-# print(clf.score(x_train,y_train))
-# print ("cross result========")
 scores = cross_val_score(clf, x_test, y_test, cv=3)
-# print (scores)
-# print (scores.mean())
 
 
 importances = clf.feature_importances_
@@ -58,6 +56,16 @@ diseases = {}
 precution_list = []
 
 rejected={"pain"}
+
+greeting_inputs = ("hey","Hi","Hey","How are you","Is anyone there?","Hello","Good day","Hello","How are you","good morning","Is anyone there?", "good evening", "morning", "evening", "hi", "whatsup")
+greeting_responses = ["hey","Hey :-)", "hey hows you?", "hello, how you doing", "hello", "Welcome","Hello, thanks for visiting","Hi there, what can I do for you?","Hi there, how can I help?"]
+
+def generate_greeting_response(greeting):
+    for token in greeting.split():
+        if token.lower() in greeting_inputs:
+            return True,random.choice(greeting_responses)
+        else:
+            return False,"0"
 
 def init():
     #Read from excell files
@@ -139,7 +147,6 @@ def recurse(node, depth,Input,feature_names,tree):
         inp = ""
         for syms in list(symptoms_given):
             if syms in symptoms.keys() :
-                print("Hello",syms,symptoms[syms])
                 if (symptoms[syms] == "yes"):
                     symptoms_exp.append(syms)
             else:
@@ -172,10 +179,15 @@ def tree_to_code(tree, feature_names):
     disease_input = input("")
     tokens = nltk.word_tokenize(disease_input)
     tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
+    for token in tokens:
+        isGreeted,greeting_response = generate_greeting_response(token)
+        if(isGreeted):
+            print(greeting_response)
+
     tokens = sorted(set(tokens))
+
     tokens = [w for w in tokens if len(w) > 3]
     for w in tokens:
-        print(w)
         conf, cnf_dis = check_pattern(chk_dis, w)  # conf,cnf_dis=check_pattern(chk_dis,disease_input)
         if conf == 1:
             for num, it in enumerate(cnf_dis):
@@ -187,12 +199,10 @@ def tree_to_code(tree, feature_names):
     for item in diseases:
         recurse(0, 1,item,feature_names,tree)
 
-    print(predected_diseases)
     predected_diseases=sorted(set(predected_diseases))
-    print(predected_diseases)
 
-    print("You may have ", item)
     for item in predected_diseases :
+        print("You may have ", item)
         print(description_list[item])
         precution_list.append(precautionDictionary[item])
 
@@ -208,12 +218,10 @@ def tree_to_code(tree, feature_names):
     for precution in precutions:
         print("-",precution)
 
-    print("Diseases : ")
+    print("Your symtoms : ")
     for d in diseases:
         print(d)
 
 
 init()
 tree_to_code(clf,cols)
-
-print(symptoms)
