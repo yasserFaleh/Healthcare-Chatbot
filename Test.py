@@ -60,7 +60,7 @@ rejected={"pain"}
 greeting_inputs = ("hey","Hi","Hey","How are you","Is anyone there?","Hello","Good day","Hello","How are you","good morning","Is anyone there?", "good evening", "morning", "evening", "hi", "whatsup")
 greeting_responses = ["hey","Hey :-)", "hey hows you?", "hello, how you doing", "hello", "Welcome","Hello, thanks for visiting","Hi there, what can I do for you?","Hi there, how can I help?"]
 
-goodbye_inputs=( "Bye", "See you later", "Goodbye" )
+goodbye_inputs=( "Bye", "bye","goodbye","good","Good","See you later", "Goodbye" )
 goodbye_responses = ["See you later, thanks for visiting","Have a nice day","Bye! Come back again soon." ]
 
 thanks_inputs =("Thanks", "thanks","Thank","thank","Thank you", "That's helpful", "Thank's a lot!")
