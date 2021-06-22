@@ -172,19 +172,8 @@ def recurse(node, depth,Input,feature_names,predected_diseases,precution_list,sy
                 if (symptoms[syms] == "yes"):
                     symptoms_exp.append(syms)
             else:
-                #print(syms,"? : ",end='')
                 connexion.send(("s"+syms).encode("Utf8"))
-                print("symptoms send ", syms)
                 inp = connexion.recv(1024).decode("Utf8")
-                
-                
-                #while True:
-                 #   inp = input("")
-                  #  if (inp == "yes" or inp == "no"):
-                   #     symptoms[syms]=inp
-                    #    break
-                    #else:
-                    #    print("provide proper answers i.e. (yes/no) : ", end="")
                 if (inp == "yes"):
                     symptoms_exp.append(syms)
 
@@ -201,13 +190,7 @@ def tree_to_code(tree, feature_names,connexion):
     predected_diseases = []
     precution_list = []
     chk_dis = ",".join(feature_names).split(",")
-
-
-    print("Enter the symptom you are experiencing  \n\t\t\t\t\t\t", end="->")
-    print("wtfffff")
     disease_input = connexion.recv(1024).decode("Utf8")
-    print("recieved",disease_input)
-    #disease_input = input("")
     tokens = nltk.word_tokenize(disease_input)
     tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
     for token in tokens:
@@ -226,7 +209,6 @@ def tree_to_code(tree, feature_names,connexion):
 
     diseases=sorted(set(diseases))
 
-    print("Are you experiencing any ")
     for item in diseases:
         recurse(0, 1,item,feature_names,predected_diseases,precution_list,symptoms_present,tree,connexion)
 
@@ -235,20 +217,13 @@ def tree_to_code(tree, feature_names,connexion):
     toSent += " <diseases>"
     for item in predected_diseases :
         toSent +=" <disease>"  
-        print("You may have ", item)
         toSent +=" <name>" + item +" </name>"
-        #connexion.send(("r"+item).encode("Utf8"))
-        
-        print(description_list[item])
         toSent +=" <description>" + description_list[item] +" </description>"
-        
         precution_list.append(precautionDictionary[item])
         toSent +=" </disease>"
     toSent += " </diseases>"
    
     precutions=[]
-    
-    print("Take following measures : ")
     for j in precution_list:
         for i in j:
             precutions.append(i)
@@ -258,14 +233,8 @@ def tree_to_code(tree, feature_names,connexion):
     for i in precutions:
         toSent +=" <precaution>" + i +" </precaution>"  
     toSent += " </precautions>"
-    for precution in precutions:
-        print("-",precution)
-
-    print("Your symtoms : ")
-    for d in diseases:
-        print(d)
+    
     toSent  += " </root>"
-    print(" resultat sent " , toSent)
     connexion.send(("r"+toSent).encode("Utf8"))
 
 
@@ -280,7 +249,6 @@ print("serveur on listenning ..")
 def threaded_client(connexion):
     tree_to_code(clf,cols,connexion)
     inputs = connexion.recv(1024).decode("Utf8")
-    print("recieved",inputs)
     tokens = nltk.word_tokenize(inputs)
     tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
     for token in tokens:
@@ -294,7 +262,7 @@ def threaded_client(connexion):
 
 
 while True:
-    print("waiting for a client")
+    print("Waiting for a new client")
     connexion, adresse = serversocket.accept()
     start_new_thread(threaded_client, (connexion, ))
 serverSocket.close()
