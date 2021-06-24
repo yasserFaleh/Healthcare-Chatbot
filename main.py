@@ -9,6 +9,8 @@ import re
 import nltk
 from nltk.stem import WordNetLemmatizer
 import random
+import socket
+from _thread import * 
 
 
 lemmatizer = WordNetLemmatizer()
@@ -50,10 +52,7 @@ symptoms=dict()
 
 symptoms_dict = {}
 
-predected_diseases = []
-symptoms_present = []
-diseases = {}
-precution_list = []
+
 
 rejected={"pain"}
 
@@ -147,7 +146,7 @@ def print_disease(node):
     disease = le.inverse_transform(val[0])
     return disease
 
-def recurse(node, depth,Input,feature_names,tree):
+def recurse(node, depth,Input,feature_names,predected_diseases,precution_list,symptoms_present,tree,connexion):
     tree_ = tree.tree_
     feature_name = [feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!" for i in tree_.feature]
     if tree_.feature[node] != _tree.TREE_UNDEFINED:
@@ -158,10 +157,10 @@ def recurse(node, depth,Input,feature_names,tree):
         else:
             val = 0
         if  val <= threshold:
-            recurse(tree_.children_left[node], depth + 1,Input,feature_names,tree)
+            recurse(tree_.children_left[node], depth + 1,Input,feature_names,predected_diseases,precution_list,symptoms_present,tree,connexion)
         else:
             symptoms_present.append(name)
-            recurse(tree_.children_right[node], depth + 1,Input,feature_names,tree)
+            recurse(tree_.children_right[node], depth + 1,Input,feature_names,predected_diseases,precution_list,symptoms_present,tree,connexion)
     else:
         present_disease = print_disease(tree_.value[node])
         red_cols = reduced_data.columns
@@ -173,14 +172,8 @@ def recurse(node, depth,Input,feature_names,tree):
                 if (symptoms[syms] == "yes"):
                     symptoms_exp.append(syms)
             else:
-                print(syms,"? : ",end='')
-                while True:
-                    inp = input("")
-                    if (inp == "yes" or inp == "no"):
-                        symptoms[syms]=inp
-                        break
-                    else:
-                        print("provide proper answers i.e. (yes/no) : ", end="")
+                connexion.send(("s"+syms).encode("Utf8"))
+                inp = connexion.recv(1024).decode("Utf8")
                 if (inp == "yes"):
                     symptoms_exp.append(syms)
 
@@ -191,15 +184,13 @@ def recurse(node, depth,Input,feature_names,tree):
             predected_diseases.append(present_disease[0])
             predected_diseases.append(second_prediction[0])
 
-def tree_to_code(tree, feature_names):
+def tree_to_code(tree, feature_names,connexion):
     diseases=[]
-    global predected_diseases
-
+    symptoms_present = []
+    predected_diseases = []
+    precution_list = []
     chk_dis = ",".join(feature_names).split(",")
-
-
-    print("Enter the symptom you are experiencing  \n\t\t\t\t\t\t", end="->")
-    disease_input = input("")
+    disease_input = connexion.recv(1024).decode("Utf8")
     tokens = nltk.word_tokenize(disease_input)
     tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
     for token in tokens:
@@ -218,46 +209,64 @@ def tree_to_code(tree, feature_names):
 
     diseases=sorted(set(diseases))
 
-    print("Are you experiencing any ")
     for item in diseases:
-        recurse(0, 1,item,feature_names,tree)
+        recurse(0, 1,item,feature_names,predected_diseases,precution_list,symptoms_present,tree,connexion)
 
     predected_diseases=sorted(set(predected_diseases))
-
+    toSent  = " <root>"
+    toSent += " <diseases>"
     for item in predected_diseases :
-        print("You may have ", item)
-        print(description_list[item])
+        toSent +=" <disease>"  
+        toSent +=" <name>" + item +" </name>"
+        toSent +=" <description>" + description_list[item] +" </description>"
         precution_list.append(precautionDictionary[item])
-
+        toSent +=" </disease>"
+    toSent += " </diseases>"
+   
     precutions=[]
-
-    print("Take following measures : ")
     for j in precution_list:
         for i in j:
             precutions.append(i)
 
     precutions=sorted(set(precutions))
+    toSent += "<precautions>"
+    for i in precutions:
+        toSent +=" <precaution>" + i +" </precaution>"  
+    toSent += " </precautions>"
+    
+    toSent  += " </root>"
+    connexion.send(("r"+toSent).encode("Utf8"))
 
-    for precution in precutions:
-        print("-",precution)
-
-    print("Your symtoms : ")
-    for d in diseases:
-        print(d)
 
 
 init()
-tree_to_code(clf,cols)
 
-inputs = input("")
-tokens = nltk.word_tokenize(inputs)
-tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
-for token in tokens:
-    isGoodByed,goodbye_response = generate_goodbye_response(token)
-    isThanksed,thanks_response = generate_thanks_response(token)
-    if (isGoodByed):
-        print(goodbye_response)
-    if (isThanksed):
-        print(thanks_response)
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.bind(('localhost', 2021))
+serversocket.listen(5)
+print("serveur on listenning ..")
+
+def threaded_client(connexion):
+    tree_to_code(clf,cols,connexion)
+    inputs = connexion.recv(1024).decode("Utf8")
+    tokens = nltk.word_tokenize(inputs)
+    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in rejected]
+    for token in tokens:
+        isGoodByed,goodbye_response = generate_goodbye_response(token)
+        isThanksed,thanks_response = generate_thanks_response(token)
+        if (isGoodByed):
+            print(goodbye_response)
+        if (isThanksed):
+            print(thanks_response)
+    connexion.close()
+
+
+while True:
+    print("Waiting for a new client")
+    connexion, adresse = serversocket.accept()
+    start_new_thread(threaded_client, (connexion, ))
+serverSocket.close()
+
+
 
 
